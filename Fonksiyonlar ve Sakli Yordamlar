@@ -1,0 +1,71 @@
+//Ürün ekleyen prosedür (saklı yordam)
+CREATE PROCEDURE public.urunekle(IN p1 integer, IN p2 text, IN p3 
+integer, IN p4 integer, IN p5 integer, IN p6 integer, IN p7 integer, IN
+p8 integer, IN p9 integer)
+ LANGUAGE sql
+ AS $$
+insert into urun 
+(urunid,urunadi,basimyili,sayfasayisi,magazaid,yazarid,cevirmenid,yayin
+eviid,kategoriid) values (p1,p2,p3,p4,p5,p6,p7,p8,p9);
+$$;
+ALTER PROCEDURE public.urunekle(IN p1 integer, IN p2 text, IN p3 
+integer, IN p4 integer, IN p5 integer, IN p6 integer, IN p7 integer, IN
+p8 integer, IN p9 integer) OWNER TO postgres;
+//İlçe sayısını getiren fonksiyon
+CREATE FUNCTION public.ilcesayisi() RETURNS integer
+ LANGUAGE plpgsql
+ AS $$
+DECLARE 
+total integer;
+BEGIN
+SELECT count(*) into total FROM "ilce";
+RETURN total;
+END;
+$$;
+ALTER FUNCTION public.ilcesayisi() OWNER TO postgres;
+// İstenilen harfe göre urunad arayan fonksiyon
+CREATE FUNCTION public.urungetir(prmt character varying) RETURNS 
+TABLE(idsutun integer, urunadsutun character varying, urunyazaridsutun 
+integer)
+ LANGUAGE plpgsql
+ AS $$
+Begin
+ return query
+ select
+ urunid,
+ urunadi,
+ yazarid
+from
+ urun
+where 
+ urunadi like prmt;
+end;
+$$;
+ALTER FUNCTION public.urungetir(prmt character varying) OWNER TO 
+postgres;
+SET default_tablespace = '';
+SET default_table_access_method = heap;
+--
+-- TOC entry 222 (class 1259 OID 16473)
+-- Name: adres; Type: TABLE; Schema: public; Owner: postgres
+--
+CREATE TABLE public.adres (
+ adresid integer NOT NULL,
+ adresad character varying(20) NOT NULL,
+ adresil character varying(20) NOT NULL,
+ adresilce character varying(20) NOT NULL
+);
+ALTER TABLE public.adres OWNER TO postgres;
+//Saatlik ücreti mesaisaati ile çarpıp iscipersonel in maaşını getiren 
+fonksiyon
+CREATE FUNCTION public.maas(mesaisaati double precision) RETURNS double
+precision
+ LANGUAGE plpgsql
+ AS $$
+begin
+ mesaisaati:=mesaisaati*25.5+mesaisaati;
+return mesaisaati;
+end;
+$$;
+ALTER FUNCTION public.maas(mesaisaati double precision) OWNER TO 
+postgres;
