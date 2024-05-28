@@ -1,0 +1,56 @@
+//Uyemusteri eklendiğinde toplamuyemusteri tablosundaki sayi 
+değerini bir arttıran trigger.
+CREATE FUNCTION public.toplam() RETURNS trigger
+ LANGUAGE plpgsql
+ AS $$
+begin
+update toplamuyemusteri set sayi=sayi+1;
+return new;
+end;
+$$;
+ALTER FUNCTION public.toplam() OWNER TO postgres;
+CREATE TRIGGER toplamtrig AFTER INSERT ON public.uyemusteri FOR EACH 
+ROW EXECUTE FUNCTION public.toplam();
+//Urun tablosuna urun eklendiğinde urunadi harflerini büyük yazan
+trigger.
+CREATE FUNCTION public.urunekle() RETURNS trigger
+ LANGUAGE plpgsql
+ AS $$
+BEGIN
+NEW."urunadi"=UPPER(NEW."urunadi");
+RETURN NEW;
+END;
+$$;
+ALTER FUNCTION public.urunekle() OWNER TO postgres;
+CREATE TRIGGER urunkayitkontrol BEFORE INSERT OR UPDATE ON public.urun 
+FOR EACH ROW EXECUTE FUNCTION public.urunekle();
+//Personel tablosuna personel eklendiğinde personelsoyadi ni 
+büyük harflerle yazan ve personelilid girilmediğinde uyarı veren 
+trigger.
+CREATE FUNCTION public.personelekle() RETURNS trigger
+ LANGUAGE plpgsql
+ AS $$
+BEGIN
+NEW."personelsoyadi"=UPPER(NEW."personelsoyadi");
+IF NEW."personelilid" IS NULL THEN
+RAISE EXCEPTION 'Personel ilid bilgisi zorunlu!';
+END IF;
+RETURN NEW;
+END;
+$$;
+ALTER FUNCTION public.personelekle() OWNER TO postgres;
+CREATE TRIGGER personelkontrol BEFORE INSERT OR UPDATE ON 
+public.personel FOR EACH ROW EXECUTE FUNCTION public.personelekle();
+//Uyemusteri tablosundan müşteri silindiğinde toplamuyemusteri 
+tablosundaki sayi değerini bir azaltan trigger.
+CREATE FUNCTION public.siluyemusteri() RETURNS trigger
+ LANGUAGE plpgsql
+ AS $$
+begin
+update toplamuyemusteri set sayi=sayi-1;
+return new;
+end;
+$$;
+ALTER FUNCTION public.siluyemusteri() OWNER TO postgres;
+CREATE TRIGGER siltrig AFTER DELETE ON public.uyemusteri FOR EACH ROW 
+EXECUTE FUNCTION public.siluyemusteri();
