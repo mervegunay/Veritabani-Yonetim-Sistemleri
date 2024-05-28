@@ -1,0 +1,811 @@
+--
+-- PostgreSQL database dump
+--
+-- Dumped from database version 15.1
+-- Dumped by pg_dump version 15.1
+-- Started on 2022-12-26 17:43:16
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+--
+-- TOC entry 236 (class 1255 OID 16771)
+-- Name: ilcesayisi(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+CREATE FUNCTION public.ilcesayisi() RETURNS integer
+ LANGUAGE plpgsql
+ AS $$
+DECLARE 
+total integer;
+BEGIN
+SELECT count(*) into total FROM "ilce";
+RETURN total;
+END;
+$$;
+ALTER FUNCTION public.ilcesayisi() OWNER TO postgres;
+--
+-- TOC entry 237 (class 1255 OID 16786)
+-- Name: maas(double precision); Type: FUNCTION; Schema: public; Owner:
+postgres
+--
+CREATE FUNCTION public.maas(mesaisaati double precision) RETURNS double
+precision
+ LANGUAGE plpgsql
+ AS $$
+begin
+ mesaisaati:=mesaisaati*25.5+mesaisaati;
+return mesaisaati;
+end;
+$$;
+ALTER FUNCTION public.maas(mesaisaati double precision) OWNER TO 
+postgres;
+--
+-- TOC entry 231 (class 1255 OID 16746)
+-- Name: personelekle(); Type: FUNCTION; Schema: public; Owner: 
+postgres
+--
+CREATE FUNCTION public.personelekle() RETURNS trigger
+ LANGUAGE plpgsql
+ AS $$
+BEGIN
+NEW."personelsoyadi"=UPPER(NEW."personelsoyadi");
+IF NEW."personelilid" IS NULL THEN
+RAISE EXCEPTION 'Personel ilid bilgisi zorunlu!';
+END IF;
+RETURN NEW;
+END;
+$$;
+ALTER FUNCTION public.personelekle() OWNER TO postgres;
+--
+-- TOC entry 233 (class 1255 OID 16757)
+-- Name: siluyemusteri(); Type: FUNCTION; Schema: public; Owner: 
+postgres
+--
+CREATE FUNCTION public.siluyemusteri() RETURNS trigger
+ LANGUAGE plpgsql
+ AS $$
+begin
+update toplamuyemusteri set sayi=sayi-1;
+return new;
+end;
+$$;
+ALTER FUNCTION public.siluyemusteri() OWNER TO postgres;
+--
+-- TOC entry 232 (class 1255 OID 16755)
+-- Name: toplam(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+CREATE FUNCTION public.toplam() RETURNS trigger
+ LANGUAGE plpgsql
+ AS $$
+begin
+update toplamuyemusteri set sayi=sayi+1;
+return new;
+end;
+$$;
+ALTER FUNCTION public.toplam() OWNER TO postgres;
+--
+-- TOC entry 230 (class 1255 OID 16744)
+-- Name: urunekle(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+CREATE FUNCTION public.urunekle() RETURNS trigger
+ LANGUAGE plpgsql
+ AS $$
+BEGIN
+NEW."urunadi"=UPPER(NEW."urunadi");
+RETURN NEW;
+END;
+$$;
+ALTER FUNCTION public.urunekle() OWNER TO postgres;
+--
+-- TOC entry 234 (class 1255 OID 16763)
+-- Name: urunekle(integer, text, integer, integer, integer, integer, 
+integer, integer, integer); Type: PROCEDURE; Schema: public; Owner: 
+postgres
+--
+CREATE PROCEDURE public.urunekle(IN p1 integer, IN p2 text, IN p3 
+integer, IN p4 integer, IN p5 integer, IN p6 integer, IN p7 integer, IN
+p8 integer, IN p9 integer)
+ LANGUAGE sql
+ AS $$
+insert into urun 
+(urunid,urunadi,basimyili,sayfasayisi,magazaid,yazarid,cevirmenid,yayin
+eviid,kategoriid) values (p1,p2,p3,p4,p5,p6,p7,p8,p9);
+$$;
+ALTER PROCEDURE public.urunekle(IN p1 integer, IN p2 text, IN p3 
+integer, IN p4 integer, IN p5 integer, IN p6 integer, IN p7 integer, IN
+p8 integer, IN p9 integer) OWNER TO postgres;
+--
+-- TOC entry 235 (class 1255 OID 16770)
+-- Name: urungetir(character varying); Type: FUNCTION; Schema: public; 
+Owner: postgres
+--
+CREATE FUNCTION public.urungetir(prmt character varying) RETURNS 
+TABLE(idsutun integer, urunadsutun character varying, urunyazaridsutun 
+integer)
+ LANGUAGE plpgsql
+ AS $$
+Begin
+ return query
+ select
+ urunid,
+ urunadi,
+ yazarid
+from
+ urun
+where 
+ urunadi like prmt;
+end;
+$$;
+ALTER FUNCTION public.urungetir(prmt character varying) OWNER TO 
+postgres;
+SET default_tablespace = '';
+SET default_table_access_method = heap;
+--
+-- TOC entry 222 (class 1259 OID 16473)
+-- Name: adres; Type: TABLE; Schema: public; Owner: postgres
+--
+CREATE TABLE public.adres (
+ adresid integer NOT NULL,
+ adresad character varying(20) NOT NULL,
+ adresil character varying(20) NOT NULL,
+ adresilce character varying(20) NOT NULL
+);
+ALTER TABLE public.adres OWNER TO postgres;
+--
+-- TOC entry 226 (class 1259 OID 16499)
+-- Name: cevirmen; Type: TABLE; Schema: public; Owner: postgres
+--
+CREATE TABLE public.cevirmen (
+ cevirmenid integer NOT NULL,
+ cevirmenad character varying(20) NOT NULL,
+ cevirmensoyad character varying(20) NOT NULL
+);
+ALTER TABLE public.cevirmen OWNER TO postgres;
+--
+-- TOC entry 216 (class 1259 OID 16431)
+-- Name: il; Type: TABLE; Schema: public; Owner: postgres
+--
+CREATE TABLE public.il (
+ ilid integer NOT NULL,
+ ilad character varying(20) NOT NULL
+);
+ALTER TABLE public.il OWNER TO postgres;
+--
+-- TOC entry 217 (class 1259 OID 16438)
+-- Name: ilce; Type: TABLE; Schema: public; Owner: postgres
+--
+CREATE TABLE public.ilce (
+ ilceid integer NOT NULL,
+ ilcedi character varying(20) NOT NULL
+);
+ALTER TABLE public.ilce OWNER TO postgres;
+--
+-- TOC entry 215 (class 1259 OID 16424)
+-- Name: personel; Type: TABLE; Schema: public; Owner: postgres
+--
+CREATE TABLE public.personel (
+ personelid integer NOT NULL,
+ personeladi character varying(20) NOT NULL,
+ personelsoyadi character varying(20) NOT NULL,
+ personelcinsiyeti character varying(20) NOT NULL,
+ personelmagazaid integer NOT NULL,
+ personelilid integer NOT NULL,
+ personelilceid integer NOT NULL
+);
+ALTER TABLE public.personel OWNER TO postgres;
+--
+-- TOC entry 227 (class 1259 OID 16609)
+-- Name: iscicalisan; Type: TABLE; Schema: public; Owner: postgres
+--
+CREATE TABLE public.iscicalisan (
+ mesaisaati integer NOT NULL
+)
+INHERITS (public.personel);
+ALTER TABLE public.iscicalisan OWNER TO postgres;
+--
+-- TOC entry 225 (class 1259 OID 16492)
+-- Name: kargofirmasi; Type: TABLE; Schema: public; Owner: postgres
+--
+CREATE TABLE public.kargofirmasi (
+ kargofirmasiid integer NOT NULL,
+ kargofirmasiad character varying(20) NOT NULL
+);
+ALTER TABLE public.kargofirmasi OWNER TO postgres;
+--
+-- TOC entry 220 (class 1259 OID 16459)
+-- Name: kategori; Type: TABLE; Schema: public; Owner: postgres
+--
+CREATE TABLE public.kategori (
+ kategoriid integer NOT NULL,
+ kategoriadi character varying(20) NOT NULL
+);
+ALTER TABLE public.kategori OWNER TO postgres;
+--
+-- TOC entry 214 (class 1259 OID 16417)
+-- Name: magaza; Type: TABLE; Schema: public; Owner: postgres
+--
+CREATE TABLE public.magaza (
+ magazaid integer NOT NULL,
+ magazaadi character varying(20) NOT NULL
+);
+ALTER TABLE public.magaza OWNER TO postgres;
+--
+-- TOC entry 223 (class 1259 OID 16480)
+-- Name: siparis; Type: TABLE; Schema: public; Owner: postgres
+--
+CREATE TABLE public.siparis (
+ siparisid integer NOT NULL,
+ kargofirmasiid integer NOT NULL,
+ uyeid integer,
+ adresid integer NOT NULL
+);
+ALTER TABLE public.siparis OWNER TO postgres;
+--
+-- TOC entry 229 (class 1259 OID 16752)
+-- Name: toplamuyemusteri; Type: TABLE; Schema: public; Owner: postgres
+--
+CREATE TABLE public.toplamuyemusteri (
+ sayi integer
+);
+ALTER TABLE public.toplamuyemusteri OWNER TO postgres;
+--
+-- TOC entry 218 (class 1259 OID 16445)
+-- Name: urun; Type: TABLE; Schema: public; Owner: postgres
+--
+CREATE TABLE public.urun (
+ urunid integer NOT NULL,
+ urunadi character varying(20) NOT NULL,
+ basimyili integer NOT NULL,
+ sayfasayisi integer NOT NULL,
+ magazaid integer NOT NULL,
+ yazarid integer NOT NULL,
+ cevirmenid integer NOT NULL,
+ yayineviid integer NOT NULL,
+ "siparisid " integer,
+ kategoriid integer NOT NULL
+);
+ALTER TABLE public.urun OWNER TO postgres;
+--
+-- TOC entry 224 (class 1259 OID 16485)
+-- Name: uyemusteri; Type: TABLE; Schema: public; Owner: postgres
+--
+CREATE TABLE public.uyemusteri (
+ uyeid integer NOT NULL,
+ uyead character varying(20) NOT NULL,
+ uyesoyad character varying(20) NOT NULL,
+ uyetel character varying(11) NOT NULL
+);
+ALTER TABLE public.uyemusteri OWNER TO postgres;
+--
+-- TOC entry 221 (class 1259 OID 16466)
+-- Name: yayinevi; Type: TABLE; Schema: public; Owner: postgres
+--
+CREATE TABLE public.yayinevi (
+ yayineviid integer NOT NULL,
+ yayineviadi character varying(20) NOT NULL
+);
+ALTER TABLE public.yayinevi OWNER TO postgres;
+--
+-- TOC entry 219 (class 1259 OID 16452)
+-- Name: yazar; Type: TABLE; Schema: public; Owner: postgres
+--
+CREATE TABLE public.yazar (
+ yazarid integer NOT NULL,
+ yazaradi character varying(20) NOT NULL,
+ yazarsoyadi character varying(20) NOT NULL
+);
+ALTER TABLE public.yazar OWNER TO postgres;
+--
+-- TOC entry 228 (class 1259 OID 16647)
+-- Name: yonetici; Type: TABLE; Schema: public; Owner: postgres
+--
+CREATE TABLE public.yonetici (
+ unvan character varying NOT NULL
+)
+INHERITS (public.personel);
+ALTER TABLE public.yonetici OWNER TO postgres;
+--
+-- TOC entry 3451 (class 0 OID 16473)
+-- Dependencies: 222
+-- Data for Name: adres; Type: TABLE DATA; Schema: public; Owner: 
+postgres
+--
+COPY public.adres (adresid, adresad, adresil, adresilce) FROM stdin;
+2 işyeri sakarya serdivan
+1 ev adana yüreğir
+\.
+--
+-- TOC entry 3455 (class 0 OID 16499)
+-- Dependencies: 226
+-- Data for Name: cevirmen; Type: TABLE DATA; Schema: public; Owner: 
+postgres
+--
+COPY public.cevirmen (cevirmenid, cevirmenad, cevirmensoyad) FROM 
+stdin;
+1 mina urgan
+2 levent cinemere
+\.
+--
+-- TOC entry 3445 (class 0 OID 16431)
+-- Dependencies: 216
+-- Data for Name: il; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+COPY public.il (ilid, ilad) FROM stdin;
+6 ankara
+1 adana
+\.
+--
+-- TOC entry 3446 (class 0 OID 16438)
+-- Dependencies: 217
+-- Data for Name: ilce; Type: TABLE DATA; Schema: public; Owner: 
+postgres
+--
+COPY public.ilce (ilceid, ilcedi) FROM stdin;
+1001 yüreğir
+\.
+--
+-- TOC entry 3456 (class 0 OID 16609)
+-- Dependencies: 227
+-- Data for Name: iscicalisan; Type: TABLE DATA; Schema: public; Owner:
+postgres
+--
+COPY public.iscicalisan (personelid, personeladi, personelsoyadi, 
+personelcinsiyeti, mesaisaati, personelmagazaid, personelilid, 
+personelilceid) FROM stdin;
+3 şamil aydın erkek 16 1 1 1001
+\.
+--
+-- TOC entry 3454 (class 0 OID 16492)
+-- Dependencies: 225
+-- Data for Name: kargofirmasi; Type: TABLE DATA; Schema: public; 
+Owner: postgres
+--
+COPY public.kargofirmasi (kargofirmasiid, kargofirmasiad) FROM stdin;
+1 aras
+2 yurtiçi
+3 ptt
+\.
+--
+-- TOC entry 3449 (class 0 OID 16459)
+-- Dependencies: 220
+-- Data for Name: kategori; Type: TABLE DATA; Schema: public; Owner: 
+postgres
+--
+COPY public.kategori (kategoriid, kategoriadi) FROM stdin;
+1 macera
+\.
+--
+-- TOC entry 3443 (class 0 OID 16417)
+-- Dependencies: 214
+-- Data for Name: magaza; Type: TABLE DATA; Schema: public; Owner: 
+postgres
+--
+COPY public.magaza (magazaid, magazaadi) FROM stdin;
+2 adanamagaza
+1 sakaryamagaza
+\.
+--
+-- TOC entry 3444 (class 0 OID 16424)
+-- Dependencies: 215
+-- Data for Name: personel; Type: TABLE DATA; Schema: public; Owner: 
+postgres
+--
+COPY public.personel (personelid, personeladi, personelsoyadi, 
+personelcinsiyeti, personelmagazaid, personelilid, personelilceid) FROM
+stdin;
+1 merve GÜNAY kadın 1 1 1001
+2 kerem GÜNAY erkek 1 1 1001
+\.
+--
+-- TOC entry 3452 (class 0 OID 16480)
+-- Dependencies: 223
+-- Data for Name: siparis; Type: TABLE DATA; Schema: public; Owner: 
+postgres
+--
+COPY public.siparis (siparisid, kargofirmasiid, uyeid, adresid) FROM 
+stdin;
+2 1 1 1
+3 3 \N 2
+1 2 1 2
+4 1 \N 1
+\.
+--
+-- TOC entry 3458 (class 0 OID 16752)
+-- Dependencies: 229
+-- Data for Name: toplamuyemusteri; Type: TABLE DATA; Schema: public; 
+Owner: postgres
+--
+COPY public.toplamuyemusteri (sayi) FROM stdin;
+2
+\.
+--
+-- TOC entry 3447 (class 0 OID 16445)
+-- Dependencies: 218
+-- Data for Name: urun; Type: TABLE DATA; Schema: public; Owner: 
+postgres
+--
+COPY public.urun (urunid, urunadi, basimyili, sayfasayisi, magazaid, 
+yazarid, cevirmenid, yayineviid, "siparisid ", kategoriid) FROM stdin;
+2 görünür karanlık 2010 360 1 1 1 1 \N 1
+3 martin eden 2008 520 1 2 2 1 \N 1
+1 sineklerin tanrısı 2012 125 1 1 1 1 1 1
+4 BEYAZ DIŞ 2004 456 1 2 2 1 1 1
+5 ATEŞ YAKMAK 2001 140 1 1 1 1 \N 1
+\.
+--
+-- TOC entry 3453 (class 0 OID 16485)
+-- Dependencies: 224
+-- Data for Name: uyemusteri; Type: TABLE DATA; Schema: public; Owner: 
+postgres
+--
+COPY public.uyemusteri (uyeid, uyead, uyesoyad, uyetel) FROM stdin;
+1 zeynep çavdar 5054760343
+3 badem badem 5541452659
+\.
+--
+-- TOC entry 3450 (class 0 OID 16466)
+-- Dependencies: 221
+-- Data for Name: yayinevi; Type: TABLE DATA; Schema: public; Owner: 
+postgres
+--
+COPY public.yayinevi (yayineviid, yayineviadi) FROM stdin;
+1 iş bankası
+\.
+--
+-- TOC entry 3448 (class 0 OID 16452)
+-- Dependencies: 219
+-- Data for Name: yazar; Type: TABLE DATA; Schema: public; Owner: 
+postgres
+--
+COPY public.yazar (yazarid, yazaradi, yazarsoyadi) FROM stdin;
+1 william golding
+2 jack london
+\.
+--
+-- TOC entry 3457 (class 0 OID 16647)
+-- Dependencies: 228
+-- Data for Name: yonetici; Type: TABLE DATA; Schema: public; Owner: 
+postgres
+--
+COPY public.yonetici (personelid, personeladi, personelsoyadi, 
+personelcinsiyeti, personelmagazaid, unvan, personelilid, 
+personelilceid) FROM stdin;
+\.
+--
+-- TOC entry 3267 (class 2606 OID 16479)
+-- Name: adres Adres_pkey; Type: CONSTRAINT; Schema: public; Owner: 
+postgres
+--
+ALTER TABLE ONLY public.adres
+ ADD CONSTRAINT "Adres_pkey" PRIMARY KEY (adresid);
+--
+-- TOC entry 3276 (class 2606 OID 16498)
+-- Name: kargofirmasi Kargo Firması_pkey; Type: CONSTRAINT; Schema: 
+public; Owner: postgres
+--
+ALTER TABLE ONLY public.kargofirmasi
+ ADD CONSTRAINT "Kargo Firması_pkey" PRIMARY KEY (kargofirmasiid);
+--
+-- TOC entry 3263 (class 2606 OID 16465)
+-- Name: kategori Kategori_pkey; Type: CONSTRAINT; Schema: public; 
+Owner: postgres
+--
+ALTER TABLE ONLY public.kategori
+ ADD CONSTRAINT "Kategori_pkey" PRIMARY KEY (kategoriid);
+--
+-- TOC entry 3241 (class 2606 OID 16423)
+-- Name: magaza Mağaza_pkey; Type: CONSTRAINT; Schema: public; Owner: 
+postgres
+--
+ALTER TABLE ONLY public.magaza
+ ADD CONSTRAINT "Mağaza_pkey" PRIMARY KEY (magazaid);
+--
+-- TOC entry 3243 (class 2606 OID 16430)
+-- Name: personel Personel_pkey; Type: CONSTRAINT; Schema: public; 
+Owner: postgres
+--
+ALTER TABLE ONLY public.personel
+ ADD CONSTRAINT "Personel_pkey" PRIMARY KEY (personelid);
+--
+-- TOC entry 3269 (class 2606 OID 16484)
+-- Name: siparis Sipariş_pkey; Type: CONSTRAINT; Schema: public; Owner:
+postgres
+--
+ALTER TABLE ONLY public.siparis
+ ADD CONSTRAINT "Sipariş_pkey" PRIMARY KEY (siparisid);
+--
+-- TOC entry 3265 (class 2606 OID 16472)
+-- Name: yayinevi Yayin Evi_pkey; Type: CONSTRAINT; Schema: public; 
+Owner: postgres
+--
+ALTER TABLE ONLY public.yayinevi
+ ADD CONSTRAINT "Yayin Evi_pkey" PRIMARY KEY (yayineviid);
+--
+-- TOC entry 3261 (class 2606 OID 16458)
+-- Name: yazar Yazar_pkey; Type: CONSTRAINT; Schema: public; Owner: 
+postgres
+--
+ALTER TABLE ONLY public.yazar
+ ADD CONSTRAINT "Yazar_pkey" PRIMARY KEY (yazarid);
+--
+-- TOC entry 3281 (class 2606 OID 16630)
+-- Name: iscicalisan iscicalisan_pkey; Type: CONSTRAINT; Schema: 
+public; Owner: postgres
+--
+ALTER TABLE ONLY public.iscicalisan
+ ADD CONSTRAINT iscicalisan_pkey PRIMARY KEY (personelid);
+--
+-- TOC entry 3284 (class 2606 OID 16663)
+-- Name: yonetici yonetici_pkey; Type: CONSTRAINT; Schema: public; 
+Owner: postgres
+--
+ALTER TABLE ONLY public.yonetici
+ ADD CONSTRAINT yonetici_pkey PRIMARY KEY (personelid);
+--
+-- TOC entry 3278 (class 2606 OID 16505)
+-- Name: cevirmen Çevirmen_pkey; Type: CONSTRAINT; Schema: public; 
+Owner: postgres
+--
+ALTER TABLE ONLY public.cevirmen
+ ADD CONSTRAINT "Çevirmen_pkey" PRIMARY KEY (cevirmenid);
+--
+-- TOC entry 3259 (class 2606 OID 16451)
+-- Name: urun Ürün_pkey; Type: CONSTRAINT; Schema: public; Owner: 
+postgres
+--
+ALTER TABLE ONLY public.urun
+ ADD CONSTRAINT "Ürün_pkey" PRIMARY KEY (urunid);
+--
+-- TOC entry 3274 (class 2606 OID 16491)
+-- Name: uyemusteri Üye Müşteri_pkey; Type: CONSTRAINT; Schema: public;
+Owner: postgres
+--
+ALTER TABLE ONLY public.uyemusteri
+ ADD CONSTRAINT "Üye Müşteri_pkey" PRIMARY KEY (uyeid);
+--
+-- TOC entry 3249 (class 2606 OID 16437)
+-- Name: il İl_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+ALTER TABLE ONLY public.il
+ ADD CONSTRAINT "İl_pkey" PRIMARY KEY (ilid);
+--
+-- TOC entry 3251 (class 2606 OID 16444)
+-- Name: ilce İlçe_pkey; Type: CONSTRAINT; Schema: public; Owner: 
+postgres
+--
+ALTER TABLE ONLY public.ilce
+ ADD CONSTRAINT "İlçe_pkey" PRIMARY KEY (ilceid);
+--
+-- TOC entry 3279 (class 1259 OID 16669)
+-- Name: fki_iscicalisan_fkey; Type: INDEX; Schema: public; Owner: 
+postgres
+--
+CREATE INDEX fki_iscicalisan_fkey ON public.iscicalisan USING btree 
+(personelid);
+--
+-- TOC entry 3252 (class 1259 OID 16687)
+-- Name: fki_m; Type: INDEX; Schema: public; Owner: postgres
+--
+CREATE INDEX fki_m ON public.urun USING btree (magazaid);
+--
+-- TOC entry 3244 (class 1259 OID 16620)
+-- Name: fki_magazaid_fkey; Type: INDEX; Schema: public; Owner: 
+postgres
+--
+CREATE INDEX fki_magazaid_fkey ON public.personel USING btree 
+(personelid);
+--
+-- TOC entry 3245 (class 1259 OID 16675)
+-- Name: fki_personelil_fkey; Type: INDEX; Schema: public; Owner: 
+postgres
+--
+CREATE INDEX fki_personelil_fkey ON public.personel USING btree 
+(personelilid);
+--
+-- TOC entry 3246 (class 1259 OID 16626)
+-- Name: fki_personelmagaza_fkey; Type: INDEX; Schema: public; Owner: 
+postgres
+--
+CREATE INDEX fki_personelmagaza_fkey ON public.personel USING btree 
+(personelmagazaid);
+--
+-- TOC entry 3270 (class 1259 OID 16735)
+-- Name: fki_siparisadresid_fkey; Type: INDEX; Schema: public; Owner: 
+postgres
+--
+CREATE INDEX fki_siparisadresid_fkey ON public.siparis USING btree 
+(adresid);
+--
+-- TOC entry 3271 (class 1259 OID 16723)
+-- Name: fki_sipariskargoid_fkey; Type: INDEX; Schema: public; Owner: 
+postgres
+--
+CREATE INDEX fki_sipariskargoid_fkey ON public.siparis USING btree 
+(kargofirmasiid);
+--
+-- TOC entry 3272 (class 1259 OID 16729)
+-- Name: fki_siparisuyeid_fkey; Type: INDEX; Schema: public; Owner: 
+postgres
+--
+CREATE INDEX fki_siparisuyeid_fkey ON public.siparis USING btree 
+(uyeid);
+--
+-- TOC entry 3253 (class 1259 OID 16699)
+-- Name: fki_uruncevirmenid_fkey; Type: INDEX; Schema: public; Owner: 
+postgres
+--
+CREATE INDEX fki_uruncevirmenid_fkey ON public.urun USING btree 
+(cevirmenid);
+--
+-- TOC entry 3254 (class 1259 OID 16717)
+-- Name: fki_urunkategoriid_fkey; Type: INDEX; Schema: public; Owner: 
+postgres
+--
+CREATE INDEX fki_urunkategoriid_fkey ON public.urun USING btree 
+(kategoriid);
+--
+-- TOC entry 3255 (class 1259 OID 16711)
+-- Name: fki_urunsiparisid_fkey; Type: INDEX; Schema: public; Owner: 
+postgres
+--
+CREATE INDEX fki_urunsiparisid_fkey ON public.urun USING btree 
+("siparisid ");
+--
+-- TOC entry 3256 (class 1259 OID 16705)
+-- Name: fki_urunyayinevi_id; Type: INDEX; Schema: public; Owner: 
+postgres
+--
+CREATE INDEX fki_urunyayinevi_id ON public.urun USING btree 
+(yayineviid);
+--
+-- TOC entry 3257 (class 1259 OID 16693)
+-- Name: fki_urunyazarid_fkey; Type: INDEX; Schema: public; Owner: 
+postgres
+--
+CREATE INDEX fki_urunyazarid_fkey ON public.urun USING btree (yazarid);
+--
+-- TOC entry 3282 (class 1259 OID 16659)
+-- Name: fki_yonetici_fkey; Type: INDEX; Schema: public; Owner: 
+postgres
+--
+CREATE INDEX fki_yonetici_fkey ON public.yonetici USING btree 
+(personelid);
+--
+-- TOC entry 3247 (class 1259 OID 16681)
+-- Name: fki_ğ; Type: INDEX; Schema: public; Owner: postgres
+--
+CREATE INDEX "fki_ğ" ON public.personel USING btree (personelilceid);
+--
+-- TOC entry 3297 (class 2620 OID 16747)
+-- Name: personel personelkontrol; Type: TRIGGER; Schema: public; 
+Owner: postgres
+--
+CREATE TRIGGER personelkontrol BEFORE INSERT OR UPDATE ON 
+public.personel FOR EACH ROW EXECUTE FUNCTION public.personelekle();
+--
+-- TOC entry 3299 (class 2620 OID 16758)
+-- Name: uyemusteri siltrig; Type: TRIGGER; Schema: public; Owner: 
+postgres
+--
+CREATE TRIGGER siltrig AFTER DELETE ON public.uyemusteri FOR EACH ROW 
+EXECUTE FUNCTION public.siluyemusteri();
+--
+-- TOC entry 3300 (class 2620 OID 16756)
+-- Name: uyemusteri toplamtrig; Type: TRIGGER; Schema: public; Owner: 
+postgres
+--
+CREATE TRIGGER toplamtrig AFTER INSERT ON public.uyemusteri FOR EACH 
+ROW EXECUTE FUNCTION public.toplam();
+--
+-- TOC entry 3298 (class 2620 OID 16745)
+-- Name: urun urunkayitkontrol; Type: TRIGGER; Schema: public; Owner: 
+postgres
+--
+CREATE TRIGGER urunkayitkontrol BEFORE INSERT OR UPDATE ON public.urun 
+FOR EACH ROW EXECUTE FUNCTION public.urunekle();
+--
+-- TOC entry 3285 (class 2606 OID 16670)
+-- Name: personel personelil_fkey; Type: FK CONSTRAINT; Schema: public;
+Owner: postgres
+--
+ALTER TABLE ONLY public.personel
+ ADD CONSTRAINT personelil_fkey FOREIGN KEY (personelilid) 
+REFERENCES public.il(ilid) NOT VALID;
+--
+-- TOC entry 3286 (class 2606 OID 16676)
+-- Name: personel personelilce_fkey; Type: FK CONSTRAINT; Schema: 
+public; Owner: postgres
+--
+ALTER TABLE ONLY public.personel
+ ADD CONSTRAINT personelilce_fkey FOREIGN KEY (personelilceid) 
+REFERENCES public.ilce(ilceid) NOT VALID;
+--
+-- TOC entry 3287 (class 2606 OID 16621)
+-- Name: personel personelmagaza_fkey; Type: FK CONSTRAINT; Schema: 
+public; Owner: postgres
+--
+ALTER TABLE ONLY public.personel
+ ADD CONSTRAINT personelmagaza_fkey FOREIGN KEY (personelmagazaid) 
+REFERENCES public.magaza(magazaid) NOT VALID;
+--
+-- TOC entry 3294 (class 2606 OID 16730)
+-- Name: siparis siparisadresid_fkey; Type: FK CONSTRAINT; Schema: 
+public; Owner: postgres
+--
+ALTER TABLE ONLY public.siparis
+ ADD CONSTRAINT siparisadresid_fkey FOREIGN KEY (adresid) REFERENCES
+public.adres(adresid) NOT VALID;
+--
+-- TOC entry 3295 (class 2606 OID 16718)
+-- Name: siparis sipariskargoid_fkey; Type: FK CONSTRAINT; Schema: 
+public; Owner: postgres
+--
+ALTER TABLE ONLY public.siparis
+ ADD CONSTRAINT sipariskargoid_fkey FOREIGN KEY (kargofirmasiid) 
+REFERENCES public.kargofirmasi(kargofirmasiid) NOT VALID;
+--
+-- TOC entry 3296 (class 2606 OID 16724)
+-- Name: siparis siparisuyeid_fkey; Type: FK CONSTRAINT; Schema: 
+public; Owner: postgres
+--
+ALTER TABLE ONLY public.siparis
+ ADD CONSTRAINT siparisuyeid_fkey FOREIGN KEY (uyeid) REFERENCES 
+public.uyemusteri(uyeid) NOT VALID;
+--
+-- TOC entry 3288 (class 2606 OID 16694)
+-- Name: urun uruncevirmenid_fkey; Type: FK CONSTRAINT; Schema: public;
+Owner: postgres
+--
+ALTER TABLE ONLY public.urun
+ ADD CONSTRAINT uruncevirmenid_fkey FOREIGN KEY (cevirmenid) 
+REFERENCES public.cevirmen(cevirmenid) NOT VALID;
+--
+-- TOC entry 3289 (class 2606 OID 16712)
+-- Name: urun urunkategoriid_fkey; Type: FK CONSTRAINT; Schema: public;
+Owner: postgres
+--
+ALTER TABLE ONLY public.urun
+ ADD CONSTRAINT urunkategoriid_fkey FOREIGN KEY (kategoriid) 
+REFERENCES public.kategori(kategoriid) NOT VALID;
+--
+-- TOC entry 3290 (class 2606 OID 16682)
+-- Name: urun urunmagazaid_fkey; Type: FK CONSTRAINT; Schema: public; 
+Owner: postgres
+--
+ALTER TABLE ONLY public.urun
+ ADD CONSTRAINT urunmagazaid_fkey FOREIGN KEY (magazaid) REFERENCES 
+public.magaza(magazaid) NOT VALID;
+--
+-- TOC entry 3291 (class 2606 OID 16706)
+-- Name: urun urunsiparisid_fkey; Type: FK CONSTRAINT; Schema: public; 
+Owner: postgres
+--
+ALTER TABLE ONLY public.urun
+ ADD CONSTRAINT urunsiparisid_fkey FOREIGN KEY ("siparisid ") 
+REFERENCES public.siparis(siparisid) NOT VALID;
+--
+-- TOC entry 3292 (class 2606 OID 16700)
+-- Name: urun urunyayineviid_fkey; Type: FK CONSTRAINT; Schema: public;
+Owner: postgres
+--
+ALTER TABLE ONLY public.urun
+ ADD CONSTRAINT urunyayineviid_fkey FOREIGN KEY (yayineviid) 
+REFERENCES public.yayinevi(yayineviid) NOT VALID;
+--
+-- TOC entry 3293 (class 2606 OID 16688)
+-- Name: urun urunyazarid_fkey; Type: FK CONSTRAINT; Schema: public; 
+Owner: postgres
+--
+ALTER TABLE ONLY public.urun
+ ADD CONSTRAINT urunyazarid_fkey FOREIGN KEY (yazarid) REFERENCES 
+public.yazar(yazarid) NOT VALID;
+-- Completed on 2022-12-26 17:43:17
+--
+-- PostgreSQL database dump complete
+--
