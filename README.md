@@ -21,6 +21,8 @@ tutulduğu bir uygulama tasarımı.
  Bir mağazada birçok ürün vardır, bir ürü yalnız bir mağazada bulunabilir.
  Bir siparişte birden çok ürün olabilir, bir ürün yalnızca bir siparişte bulunur.
 
+Varlık Bağıntı Diyagramı(Crow’s Foot)
+16 tane tablodan oluşuyor.
 
 İlişkisel Şema:
 adres(adresid:integer,adresad:varchar(20),adresil:varchar(20),adresilce:varchar(20))
